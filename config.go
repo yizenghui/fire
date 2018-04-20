@@ -25,12 +25,6 @@ type Database struct {
 	Port     int    `toml:"port"`
 }
 
-//Task 配置
-type Task struct {
-	Worker   int `toml:"worker"`
-	Capacity int `toml:"capacity"`
-}
-
 var confFile = "conf.toml"
 var config Config
 
