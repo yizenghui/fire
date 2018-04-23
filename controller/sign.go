@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -9,10 +10,11 @@ import (
 	cpi "github.com/yizenghui/fire"
 )
 
-// jwtCustomClaims are custom claims extending default ones.
-type jwtCustomClaims struct {
-	OpenID string `json:"open_id"`
-	Code   string `json:"code"`
+// JwtCustomClaims are custom claims extending default ones.
+type JwtCustomClaims struct {
+	OpenID  string `json:"open_id"`
+	Code    string `json:"code"`
+	Session string `json:"session"`
 	jwt.StandardClaims
 }
 
@@ -22,10 +24,12 @@ func Sign(c echo.Context) error {
 	ret, _ := cpi.GetOpenID(code)
 	if code != "" && ret.OpenID != "" {
 
+		log.Println(ret)
 		// Set custom claims
-		claims := &jwtCustomClaims{
+		claims := &JwtCustomClaims{
 			ret.OpenID,
 			code,
+			ret.SessionKey,
 			jwt.StandardClaims{
 				ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
 			},
@@ -50,7 +54,7 @@ func Sign(c echo.Context) error {
 // 获取签名里面的信息
 func getOpenID(c echo.Context) string {
 	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*jwtCustomClaims)
+	claims := user.Claims.(*JwtCustomClaims)
 	return claims.OpenID
 }
 
@@ -62,9 +66,13 @@ func getUser(openID string) (*cpi.Fans, error) {
 
 // Crypt 解密同步用户信息
 func Crypt(c echo.Context) error {
-	sessionKey := c.QueryParam("sk")
+
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*JwtCustomClaims)
+
+	// sessionKey := c.QueryParam("sk")
 	encryptedData := c.QueryParam("ed")
 	iv := c.QueryParam("iv")
-	ret, _ := cpi.GetCryptData(sessionKey, encryptedData, iv)
+	ret, _ := cpi.GetCryptData(claims.Session, encryptedData, iv)
 	return c.JSON(http.StatusOK, ret)
 }

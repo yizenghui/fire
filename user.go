@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/chanxuehong/wechat.v2/mp/message/template"
@@ -17,8 +18,9 @@ import (
 
 // OpenIDData 开放数据 openID
 type OpenIDData struct {
-	ErrCode int64  `json:"errcode"`
-	OpenID  string `json:"openid"`
+	ErrCode    int64  `json:"errcode"`
+	OpenID     string `json:"openid"`
+	SessionKey string `json:"session_key"`
 }
 
 //GetOpenID 获取微信小程序上报的openid 此ID暂不加密处理
@@ -46,7 +48,7 @@ func GetOpenID(code string) (OpenIDData, error) {
 		err = errors.New(string(ret.ErrCode))
 	}
 
-	return OpenIDData{ret.ErrCode, ret.OpenID}, err
+	return OpenIDData{ret.ErrCode, ret.OpenID, ret.SessionKey}, err
 }
 
 //SendPostUpdateMSG 发送更新通知
@@ -187,8 +189,10 @@ func SaveQrcodeImg(imageURL, saveName string, body []byte) (n int64, err error) 
 // GetCryptData 解密数据
 func GetCryptData(sessionKey, encryptedData, iv string) (*Fans, error) {
 
+	log.Println(config.ReaderMinApp.AppID, sessionKey, encryptedData, iv)
 	pc := wxbizdatacrypt.NewWXBizDataCrypt(config.ReaderMinApp.AppID, sessionKey)
 	userInfo, err := pc.Decrypt(encryptedData, iv)
+	log.Println(err)
 	if err != nil {
 		return &Fans{}, err
 	}

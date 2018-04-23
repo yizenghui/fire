@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	cpi "github.com/yizenghui/fire"
 	c "github.com/yizenghui/fire/controller"
 )
@@ -47,7 +48,7 @@ func main() {
 	// })
 
 	// 记录分享 (我们现在通过分享次数进行排序)
-	e.POST("/push", c.NewPush)
+	e.POST("/newpush", c.NewPush)
 
 	// 创建任务
 	e.POST("/task", func(c echo.Context) error {
@@ -87,6 +88,22 @@ func main() {
 		var err2 error
 		return err2
 	})
+
+	// Restricted group
+	api := e.Group("/api")
+
+	// Configure middleware with the custom claims type
+	config := middleware.JWTConfig{
+		Claims:     &c.JwtCustomClaims{},
+		SigningKey: []byte("secret"),
+	}
+	api.Use(middleware.JWTWithConfig(config))
+	// r.Use(middleware.JWT([]byte("secret")))
+
+	// 记录分享 (我们现在通过分享次数进行排序)
+	api.POST("/newpush", c.NewPush)
+
+	api.GET("/crypt", c.Crypt)
 	// 图标
 	e.File("favicon.ico", "images/favicon.ico")
 	e.Logger.Fatal(e.Start(":8009"))
