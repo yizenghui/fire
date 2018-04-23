@@ -1,5 +1,24 @@
 package minappapi
 
+/***fans**/
+
+// GetFansByOpenID Fans 如果没有的话进行初始化
+func (fans *Fans) GetFansByOpenID(openID string) {
+	DB().Where(Fans{OpenID: openID}).FirstOrCreate(&fans)
+}
+
+// Save Fans
+func (fans *Fans) Save() {
+	DB().Save(&fans)
+}
+
+/*** fans end**/
+
+// GetTaskByID Task 如果没有的话进行初始化
+func (task *Task) GetTaskByID(id int64) {
+	DB().First(&task, id)
+}
+
 // GetPostByURL Post 如果没有的话进行初始化
 func (post *Post) GetPostByURL(url string) {
 	DB().Where(Post{URL: url}).FirstOrCreate(&post)
@@ -8,11 +27,6 @@ func (post *Post) GetPostByURL(url string) {
 // GetPostByID Post 如果没有的话进行初始化
 func (post *Post) GetPostByID(id int64) {
 	DB().First(&post, id)
-}
-
-// GetFansByOpenID Fans 如果没有的话进行初始化
-func (fans *Fans) GetFansByOpenID(openID string) {
-	DB().Where(Fans{OpenID: openID}).FirstOrCreate(&fans)
 }
 
 // // GetFansByOpenID Fans 如果没有的话进行初始化
@@ -52,11 +66,6 @@ func (post *Post) GetShareRankPost() []Post {
 	DB().Where("fol_num > 10").Where("share_num > 10").Order("share_num desc, id desc").Limit(100).Find(&posts)
 	// DB().Where("fol_num > 0").Find(&posts)
 	return posts
-}
-
-// Save Fans
-func (fans *Fans) Save() {
-	DB().Save(&fans)
 }
 
 // Save Subscribe

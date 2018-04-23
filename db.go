@@ -32,39 +32,40 @@ type Fans struct {
 //Share 分享记录
 type Share struct {
 	ID        uint `gorm:"primary_key"`
-	FansID    uint `gorm:"index"`
-	PostID    uint
-	SubNum    int64 // 订阅次数 用户每提交一次+1
+	FansID    uint `gorm:"index:index"`
+	TaskID    uint `gorm:"index:index"`
 	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time `sql:"index"`
 }
 
-// Activity 提交的url
-type Activity struct {
-	ID        uint      `gorm:"primary_key"`
-	Title     string    `gorm:"type:varchar(64);"`   // 活动标题
-	Intro     string    `gorm:"type:varchar(1024);"` // 活动描述
-	TotalNum  int64     //总访问量
-	Number    int64     //最大可获奖人数
-	Fore      int64     //最低获取火力条件
-	StartAt   int64     //开始时间
-	EndAt     int64     //结束时间
-	Images    string    `gorm:"type:text;"` // 展品图片
-	SpreadAt  time.Time `sql:"index"`       //推广期
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time `sql:"index"`
+// Task 提交的url
+type Task struct {
+	ID               uint      `gorm:"primary_key"`
+	FansID           uint      //发起人id
+	City             string    `sql:"index"`                // 城市(发起人所在的)
+	Title            string    `gorm:"type:varchar(64);"`   // 活动标题
+	Intro            string    `gorm:"type:varchar(1024);"` // 活动描述
+	TotalNum         int64     //总访问量
+	Number           int64     //最大可获奖人数
+	CompletionNumber int64     //当前完成人数
+	Fore             int64     //最低获取火力条件
+	StartAt          time.Time //开始时间
+	EndAt            time.Time //结束时间
+	Images           string    `gorm:"type:text;"` // 展品图片
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	SpreadAt         *time.Time `sql:"index:date"` //推广期截止时间
+	ModeratedAt      *time.Time `sql:"index:date"` //审核时间
+	DeletedAt        *time.Time `sql:"index:date"`
 }
 
 //Join 粉丝参加活动成绩
 type Join struct {
 	ID           uint      `gorm:"primary_key"`
-	FansID       uint      `gorm:"index"` //粉丝ID
-	ActivityID   uint      `gorm:"index"` //活动ID
+	Fore         uint      `gorm:"index:id"` //有效火力
+	FansID       uint      `gorm:"index:id"` //粉丝ID
+	TaskID       uint      `gorm:"index:id"` //活动ID
 	ReachAt      time.Time //达成时间
 	SettlementAt time.Time //结算时间
-	Fore         int64     //有效火力
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	DeletedAt    *time.Time `sql:"index"`
