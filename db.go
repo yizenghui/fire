@@ -22,6 +22,7 @@ type Fans struct {
 	AvatarURL  string
 	Language   string
 	Timestamp  int64
+	Trust      int16 `gorm:"default:30;"` // 信任度
 	AppID      string
 	SessionKey string // 粉丝上次的session key 如果有变化，同步一次粉丝数据
 	CreatedAt  time.Time
@@ -44,6 +45,7 @@ type Task struct {
 	City             string    `sql:"index"`                // 城市(发起人所在的)
 	Title            string    `gorm:"type:varchar(64);"`   // 活动标题
 	Intro            string    `gorm:"type:varchar(1024);"` // 活动描述
+	Statement        string    `gorm:"type:varchar(1024);"` // 声明
 	TotalNum         int64     //总访问量
 	Number           int64     //最大可获奖人数
 	CompletionNumber int64     //当前完成人数
@@ -56,6 +58,29 @@ type Task struct {
 	SpreadAt         *time.Time `sql:"index:date"` //推广期截止时间
 	ModeratedAt      *time.Time `sql:"index:date"` //审核时间
 	DeletedAt        *time.Time `sql:"index:date"`
+}
+
+//Confirm 粉丝参加活动结账后帮其证实真实有效
+type Confirm struct {
+	ID        uint       `gorm:"primary_key"`
+	FansID    uint       `gorm:"index:id"` //粉丝ID
+	TaskID    uint       `gorm:"index:id"` //活动ID
+	DeletedAt *time.Time `sql:"index"`
+}
+
+//Report 粉丝举报活动
+type Report struct { // 举报需知： 受理存在以下情况的活动，虚假、挂羊头卖狗肉、额外收费或条件直接影响活动结算的
+	ID        uint   `gorm:"primary_key"`
+	FansID    uint   `gorm:"index:id"`            //粉丝ID
+	TaskID    uint   `gorm:"index:id"`            //活动ID
+	Intro     string `gorm:"type:varchar(1024);"` //描述
+	Images    string `gorm:"type:text;"`          //证图
+	State     int16  //待处理 已撤消 受理中 协商解决 实锤 假锤
+	Reply     string `gorm:"type:varchar(1024);"` //答复
+	Contact   string //留下联系方式 微信号或者手机号
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `sql:"index"`
 }
 
 //Join 粉丝参加活动成绩

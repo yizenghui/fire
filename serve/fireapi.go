@@ -100,9 +100,10 @@ func main() {
 	api.Use(middleware.JWTWithConfig(config))
 	// r.Use(middleware.JWT([]byte("secret")))
 
-	// 记录分享 (我们现在通过分享次数进行排序)
+	// 新增任务
 	api.POST("/newpush", c.NewPush)
 
+	// 获取用户资源
 	api.GET("/crypt", c.Crypt)
 	// 图标
 	e.File("favicon.ico", "images/favicon.ico")
