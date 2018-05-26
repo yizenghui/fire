@@ -2,75 +2,23 @@ package main
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	cpi "github.com/yizenghui/fire"
-	c "github.com/yizenghui/fire/controller"
+	c "github.com/yizenghui/fire/api"
+	cpi "github.com/yizenghui/fire/core"
 )
 
-//CheckSubcribeUpdate  每天处理订阅更新
-func CheckSubcribeUpdate() {
-	ticker := time.NewTicker(time.Hour * 6)
-	for _ = range ticker.C {
-		go cpi.RunSubcribePostUpdateCheck()
-	}
-}
-
 func main() {
-	// go CheckSubcribeUpdate()
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "welcome to fire minapp api, this build by yizenghui.com for go!")
-	})
-	// 获取openid
-	e.GET("/getopenid", func(c echo.Context) error {
-		code := c.QueryParam("code")
-		ret, _ := cpi.GetOpenID(code)
-		return c.JSON(http.StatusOK, ret)
+		return c.String(http.StatusOK, "welcome to fire minapp api, this build by  go!")
 	})
 
-	// 用户签名
+	// 获取用户签名
 	e.GET("/sign", c.Sign)
-	// 解密数据内容
+	// 解密数据内容(保存数据到库)
 	e.GET("/crypt", c.Crypt)
-
-	// 记录分享 (我们现在通过分享次数进行排序)
-	// e.GET("/push", func(c echo.Context) error {
-	// 	openID := c.QueryParam("openid")
-	// 	url := c.QueryParam("url")
-	// 	cs := cpi.ShareLog(openID, url)
-	// 	type Ret struct {
-	// 		Status bool
-	// 	}
-	// 	return c.JSON(http.StatusOK, Ret{Status: cs})
-	// })
-
-	// 记录分享 (我们现在通过分享次数进行排序)
-	e.POST("/newpush", c.NewPush)
-
-	// 创建任务
-	e.POST("/task", func(c echo.Context) error {
-		openID := c.QueryParam("openid")
-		url := c.QueryParam("url")
-		cs := cpi.ShareLog(openID, url)
-		type Ret struct {
-			Status bool
-		}
-		return c.JSON(http.StatusOK, Ret{Status: cs})
-	})
-
-	// 获取任务列表
-	e.GET("/task", func(c echo.Context) error {
-		openID := c.QueryParam("openid")
-		url := c.QueryParam("url")
-		cs := cpi.ShareLog(openID, url)
-		type Ret struct {
-			Status bool
-		}
-		return c.JSON(http.StatusOK, Ret{Status: cs})
-	})
 
 	// 获取推荐码(图片资源)
 	e.GET("/qrcode", func(c echo.Context) error {
@@ -100,8 +48,14 @@ func main() {
 	api.Use(middleware.JWTWithConfig(config))
 	// r.Use(middleware.JWT([]byte("secret")))
 
-	// 新增任务
+	// 新增助力
 	api.POST("/newpush", c.NewPush)
+
+	// 新增任务
+	api.POST("/newstask", c.NewTask)
+
+	// 新增任务
+	api.POST("/jointask", c.NewTask)
 
 	// 获取用户资源
 	api.GET("/crypt", c.Crypt)
